@@ -157,7 +157,7 @@ public partial class Form1 : Form
         Controls.Add(webCard);
         Controls.Add(proxyCard);
 
-        var vaultLink = new LinkLabel { Text = "Nạp kiến thức vào vault (upload .docx/.pdf)", AutoSize = true, Location = new Point(12, 178) };
+        var vaultLink = new LinkLabel { Text = "Vault: nạp kiến thức (.docx/.pdf) & xem graph liên kết", AutoSize = true, Location = new Point(12, 178) };
         vaultLink.Click += (_, _) =>
         {
             try { Process.Start(new ProcessStartInfo("http://127.0.0.1:8787/vault") { UseShellExecute = true }); } catch { /* ignore */ }

@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 import os from 'node:os'
 import { createVaultRouter } from './vault.js'
+import { createVaultGraphRouter } from './vault-graph.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -79,6 +80,7 @@ function runHeadless(task) {
 const app = express()
 app.use(express.json({ limit: '10mb' }))
 app.use('/vault', createVaultRouter(VAULT_DIR))
+app.use('/vault', createVaultGraphRouter(VAULT_DIR))
 
 app.post('/v1/chat/completions', async (req, res) => {
   const { messages, stream } = req.body ?? {}

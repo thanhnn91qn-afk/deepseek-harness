@@ -78,6 +78,8 @@ That same folder is what the `vault` MCP server (`mcp-server-filesystem`, wired 
 
 **No file-type/content validation beyond extension** — a `.docx`/`.pdf` upload is parsed by `mammoth`/`pdf-parse`, both of which handle untrusted input defensively, but treat this the same as any other upload endpoint: don't expose it to the LAN unless you also accept [the LAN risk below](#lan-access-and-its-risk) for the vault's contents.
 
+`GET /vault/graph` lists every note and renders a force-directed graph of `[[wikilink]]`-style connections between them (Obsidian's own link syntax) — a small canvas + vanilla JS view with no external/CDN dependency, so it works fully offline. `GET /vault/graph-data` returns the same thing as JSON (`{ notes, graph: { nodes, links } }`) if you want to build something else on top of it. This is read-only; it doesn't need Obsidian running.
+
 ## Point your app at it
 
 Configure your app the same way you would for OpenAI, but with:

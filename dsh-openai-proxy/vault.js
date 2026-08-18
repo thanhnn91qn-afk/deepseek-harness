@@ -69,7 +69,7 @@ const PAGE = (vaultDir, message) => `<!doctype html>
 </head>
 <body>
 <h1>Nạp kiến thức vào vault</h1>
-<p>Vault: <code>${vaultDir}</code></p>
+<p>Vault: <code>${vaultDir}</code> · <a href="/vault/graph">Xem danh sách &amp; graph &rarr;</a></p>
 ${message ?? ''}
 <form class="drop" method="post" action="/vault/upload" enctype="multipart/form-data">
   <p>Chọn file <code>.docx</code>, <code>.pdf</code>, <code>.md</code> hoặc <code>.txt</code> — sẽ tự convert sang Markdown và lưu vào vault.</p>

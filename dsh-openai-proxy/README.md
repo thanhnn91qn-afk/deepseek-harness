@@ -113,14 +113,43 @@ rụng, và tổng số luật bị chặn ở 80.
 
 | Endpoint | Việc |
 |---|---|
-| `GET /memory/rules` | Xem luật đã tích luỹ và số verdict đang chờ |
+| `GET /memory/rules` | Xem luật đã tích luỹ, số verdict chờ, mức dùng trần |
+| `GET /memory/config` | Xem tham số hiện tại kèm khoảng cho phép và mô tả |
+| `POST /memory/config` | Chỉnh tham số, có hiệu lực ngay |
 | `POST /memory/consolidate` | Gộp ngay, không đợi hẹn giờ |
 | `POST /memory/tidy` | Dọn nháp hết hạn + sinh lại chỉ mục (không gọi LLM) |
 
-| Biến môi trường | Mặc định | Ý nghĩa |
+### Tham số chỉnh được
+
+Sửa trực tiếp `$DSH_HOME/memory/config.json` (file tự sinh lần chạy đầu, có sẵn
+mô tả tiếng Việt cho từng tham số), hoặc `POST /memory/config`.
+
+| Tham số | Mặc định | Khoảng | Ý nghĩa |
+|---|---|---|---|
+| `maxRules` | 80 | 1–5000 | Trần số luật giữ trong vault |
+| `promoteAt` | 3 | 1–100 | Lặp bao nhiêu lần thì thành luật chính thức |
+| `draftTtlDays` | 30 | 1–3650 | Nháp bao lâu không tái xuất hiện thì xoá |
+| `chunkSize` | 20 | 1–100 | Số nhận xét gửi model mỗi lần |
+| `minVerdicts` | 5 | 1–10000 | Ngưỡng tối thiểu để chạy hợp nhất |
+| `intervalMs` | 3h | 0–7 ngày | Chu kỳ tự hợp nhất; `0` = chỉ chạy khi gọi tay |
+| `maxVerdictChars` | 600 | 80–5000 | Độ dài nhận xét giữ lại |
+
+**Có hiệu lực hồi tố:** hạ `promoteAt` xuống 2 thì các luật đang có sẵn 2 lần
+thành chính thức **ngay**, không phải chờ gặp lại; hạ `maxRules` thì phần dư bị
+loại ở lần dọn kế tiếp. Trạng thái nháp được tính lại từ số lần gặp mỗi khi đọc,
+không tin vào cờ đã ghi trong file.
+
+Giá trị ngoài khoảng bị kẹp về biên và báo trong `rejected`. Giá trị hỏng
+(`null`, chuỗi rỗng, chữ) **giữ nguyên giá trị cũ** thay vì nhận `0` — vì `0` sẽ
+bị kẹp thành `promoteAt: 1`, khiến mọi quan sát đơn lẻ thành luật và làm ngập
+chỉ mục.
+
+Biến môi trường cùng tên viết hoa (`MEMORY_MAX_RULES`, `MEMORY_PROMOTE_AT`, …)
+ghi đè file, dùng khi cần ép giá trị từ launcher.
+
+| Biến môi trường khác | Mặc định | Ý nghĩa |
 |---|---|---|
 | `MEMORY_ENABLED` | `1` | `0` để tắt hẳn đường ống |
-| `MEMORY_INTERVAL_MS` | `10800000` (3h) | `0` để chỉ chạy khi gọi tay |
 | `MEMORY_LLM_BASE_URL` | `http://192.168.1.71:1234/v1` | Endpoint dùng để chưng cất |
 | `MEMORY_LLM_MODEL` | `google/gemma-4-12b` | Model chưng cất |
 

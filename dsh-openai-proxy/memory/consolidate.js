@@ -14,12 +14,8 @@
 import { upsertRule } from './rules.js'
 import { dropVerdicts, readVerdicts } from './verdicts.js'
 import { writeIndex } from './index-file.js'
+import { DEFAULTS } from './config.js'
 
-/** Verdicts per model call — small enough to stay well inside a 12B's usable context. */
-const CHUNK_SIZE = 20
-
-/** Refuse to run on a trickle; patterns are not visible in a handful of reviews. */
-const MIN_VERDICTS = 5
 
 const SYSTEM_PROMPT = `Bạn là bộ phân tích chất lượng hồ sơ bệnh án.
 Đầu vào là các nhận xét đã khử định danh từ những lần rà soát hồ sơ ra viện.
@@ -117,11 +113,12 @@ async function proposeFromChunk(llm, lines, signal) {
  */
 export async function consolidate(options) {
   const { dshHome, vaultDir, agentsPath, llm, signal } = options
+  const config = options.config ?? DEFAULTS
   const verdicts = readVerdicts(dshHome)
   const empty = { read: verdicts.length, consumed: 0, proposed: 0, created: 0, merged: 0, rejected: 0, listed: 0 }
 
-  if (verdicts.length < MIN_VERDICTS) {
-    return { ...empty, skipped: `cần ít nhất ${MIN_VERDICTS} nhận xét, hiện có ${verdicts.length}` }
+  if (verdicts.length < config.minVerdicts) {
+    return { ...empty, skipped: `cần ít nhất ${config.minVerdicts} nhận xét, hiện có ${verdicts.length}` }
   }
 
   let consumed = 0
@@ -130,8 +127,8 @@ export async function consolidate(options) {
   let merged = 0
   let rejected = 0
 
-  for (let i = 0; i < verdicts.length; i += CHUNK_SIZE) {
-    const chunk = verdicts.slice(i, i + CHUNK_SIZE)
+  for (let i = 0; i < verdicts.length; i += config.chunkSize) {
+    const chunk = verdicts.slice(i, i + config.chunkSize)
     let proposals
     try {
       proposals = await proposeFromChunk(llm, chunk.map(v => v.text), signal)
@@ -141,7 +138,7 @@ export async function consolidate(options) {
     }
     proposed += proposals.length
     for (const proposal of proposals) {
-      const res = upsertRule(vaultDir, proposal)
+      const res = upsertRule(vaultDir, proposal, config)
       if (res.status === 'created') created += 1
       else if (res.status === 'merged') merged += 1
       else rejected += 1
@@ -150,6 +147,6 @@ export async function consolidate(options) {
   }
 
   dropVerdicts(dshHome, consumed)
-  const { listed } = writeIndex(vaultDir, agentsPath)
+  const { listed } = writeIndex(vaultDir, agentsPath, config)
   return { read: verdicts.length, consumed, proposed, created, merged, rejected, listed }
 }

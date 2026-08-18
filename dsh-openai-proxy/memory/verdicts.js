@@ -16,9 +16,7 @@
 import { appendFileSync, mkdirSync, readFileSync, renameSync, statSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
 import { scrubForStorage } from './scrub.js'
-
-/** Retained characters per verdict; enough to cluster on, too little to reconstruct a record. */
-const MAX_VERDICT_CHARS = 600
+import { DEFAULTS } from './config.js'
 
 /** Roll the log over once it passes this size so it cannot grow without bound. */
 const MAX_LOG_BYTES = 8 * 1024 * 1024
@@ -35,11 +33,12 @@ export function verdictLogPath(dshHome) {
  * request that already produced a good answer for the caller.
  * @param {string} dshHome - dsh home directory.
  * @param {{text: string, at?: string}} verdict - the agent's conclusion.
+ * @param {object} [config] - effective settings.
  * @returns {boolean} true when a line was written.
  */
-export function appendVerdict(dshHome, verdict) {
+export function appendVerdict(dshHome, verdict, config = DEFAULTS) {
   try {
-    const text = scrubForStorage(verdict?.text ?? '', MAX_VERDICT_CHARS)
+    const text = scrubForStorage(verdict?.text ?? '', config.maxVerdictChars)
     if (text === '') return false
 
     const file = verdictLogPath(dshHome)

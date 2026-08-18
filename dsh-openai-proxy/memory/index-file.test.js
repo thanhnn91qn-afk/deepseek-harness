@@ -5,7 +5,10 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { writeIndex } from './index-file.js'
-import { PROMOTE_AT, upsertRule } from './rules.js'
+import { upsertRule } from './rules.js'
+import { DEFAULTS } from './config.js'
+
+const { promoteAt: PROMOTE_AT } = DEFAULTS
 
 function workspace() {
   const dir = mkdtempSync(path.join(tmpdir(), 'dsh-index-'))

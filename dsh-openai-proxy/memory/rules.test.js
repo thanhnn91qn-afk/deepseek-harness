@@ -4,10 +4,10 @@ import assert from 'node:assert/strict'
 import { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
-import {
-  DRAFT_TTL_DAYS, MAX_RULES, PROMOTE_AT,
-  enforceLimits, readRules, slugify, upsertRule,
-} from './rules.js'
+import { enforceLimits, readRules, slugify, upsertRule } from './rules.js'
+import { DEFAULTS } from './config.js'
+
+const { draftTtlDays: DRAFT_TTL_DAYS, maxRules: MAX_RULES, promoteAt: PROMOTE_AT } = DEFAULTS
 
 const DAY_MS = 24 * 60 * 60 * 1000
 

@@ -57,14 +57,30 @@ Phiên sau (mọi lần gọi API)
 
 ### Tham số
 
-| Hằng số | Giá trị | Lý do |
-|---|---|---|
-| `MAX_RULES` | 80 | Trần cứng; vượt thì loại luật yếu nhất. |
-| `PROMOTE_AT` | 3 | Gặp 1 lần là nháp, 3 lần mới thành luật. |
-| `DRAFT_TTL_DAYS` | 30 | Nháp không tái xuất hiện thì tự rụng. |
-| `CHUNK_SIZE` | 20 | Vừa với context dùng được của 12B. |
-| `MIN_VERDICTS` | 5 | Dưới ngưỡng này chưa thấy được mẫu. |
-| `MEMORY_INTERVAL_MS` | 3 giờ | Vài lần/ngày là đủ cho vài trăm hồ sơ. |
+Tất cả đều là **cài đặt chỉnh được**, không phải hằng số: mức nào là "đủ nhiều"
+phụ thuộc khối lượng thực tế, nên giá trị dưới đây chỉ là ước lượng khởi đầu.
+
+| Tham số | Mặc định | Khoảng | Lý do chọn |
+|---|---|---|---|
+| `maxRules` | 80 | 1–5000 | Trần cứng; vượt thì loại luật yếu nhất. |
+| `promoteAt` | 3 | 1–100 | Gặp 1 lần là nháp, 3 lần mới thành luật. |
+| `draftTtlDays` | 30 | 1–3650 | Nháp không tái xuất hiện thì tự rụng. |
+| `chunkSize` | 20 | 1–100 | Vừa với context dùng được của 12B. |
+| `minVerdicts` | 5 | 1–10000 | Dưới ngưỡng này chưa thấy được mẫu. |
+| `intervalMs` | 3 giờ | 0–7 ngày | Vài lần/ngày là đủ cho vài trăm hồ sơ. |
+| `maxVerdictChars` | 600 | 80–5000 | Đủ để gom cụm, thiếu để dựng lại hồ sơ. |
+
+Nguồn đọc theo thứ tự: mặc định → `$DSH_HOME/memory/config.json` → biến môi
+trường. File tự sinh lần chạy đầu kèm mô tả tiếng Việt từng tham số.
+
+**Hiệu lực hồi tố.** `readRules` tính lại trạng thái nháp từ `count` so với
+`promoteAt` *hiện tại* thay vì tin cờ đã ghi trong file, nên hạ ngưỡng là các
+luật đủ điều kiện được thăng hạng ngay, không phải chờ lần gặp sau.
+
+**Chống giá trị hỏng.** `Number(null)`, `Number('')`, `Number(false)` đều ra `0`,
+mà `0` kẹp về `promoteAt: 1` — tức mọi quan sát đơn lẻ thành luật chính thức,
+đúng thứ thiết kế này sinh ra để tránh. Nên chỉ số thật và chuỗi số mới được
+nhận; thứ khác rơi về giá trị cũ và bị liệt kê trong `rejected`.
 
 ## Chống rác
 

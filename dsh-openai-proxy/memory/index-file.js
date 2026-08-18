@@ -7,7 +7,7 @@
  * the agent starts out knowing. Two properties matter:
  *
  *   - **Only established rules are listed.** A draft (seen fewer than
- *     PROMOTE_AT times) stays in the vault for review but is kept out of the
+ *     `promoteAt` times) stays in the vault for review but is kept out of the
  *     model's context, so an unconfirmed guess never steers a review.
  *   - **One line per rule, body on demand.** The index is a table of contents,
  *     not the content; the agent reads a full note through the vault MCP server
@@ -19,7 +19,8 @@
  */
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
-import { PROMOTE_AT, readRules } from './rules.js'
+import { readRules } from './rules.js'
+import { DEFAULTS } from './config.js'
 
 const BEGIN = '<!-- DSH-MEMORY:BEGIN — tự sinh, đừng sửa trong khối này -->'
 const END = '<!-- DSH-MEMORY:END -->'
@@ -56,12 +57,13 @@ ${END}`
  * Rewrite the memory block in the instruction file.
  * @param {string} vaultDir - vault root holding `memory/`.
  * @param {string} agentsPath - path to the instruction file to update.
+ * @param {object} [config] - effective settings.
  * @returns {{listed: number, skippedDrafts: number}} what the index now advertises.
  */
-export function writeIndex(vaultDir, agentsPath) {
-  const all = readRules(vaultDir)
+export function writeIndex(vaultDir, agentsPath, config = DEFAULTS) {
+  const all = readRules(vaultDir, config)
   const established = all
-    .filter(r => !r.draft && r.count >= PROMOTE_AT)
+    .filter(r => !r.draft && r.count >= config.promoteAt)
     .sort((a, b) => b.count - a.count)
   const block = renderBlock(established)
 

@@ -39,8 +39,6 @@ const DSH_HOME = process.env.DSH_HOME ?? path.join(os.homedir(), '.dsh')
  * later session. `MEMORY_ENABLED=0` turns the whole pipeline off.
  */
 const MEMORY_ENABLED = process.env.MEMORY_ENABLED !== '0'
-/** How often pending verdicts are folded into rules; 0 disables the timer. */
-const MEMORY_INTERVAL_MS = Number(process.env.MEMORY_INTERVAL_MS ?? 3 * 60 * 60 * 1000)
 const MEMORY_LLM = {
   baseUrl: process.env.MEMORY_LLM_BASE_URL ?? 'http://192.168.1.71:1234/v1',
   apiKey: process.env.MEMORY_LLM_API_KEY ?? process.env.LMSTUDIO_API_KEY ?? 'lm-studio',
@@ -119,7 +117,6 @@ app.use('/memory', createMemoryRouter({
   vaultDir: VAULT_DIR,
   llm: MEMORY_LLM,
   enabled: MEMORY_ENABLED,
-  intervalMs: MEMORY_INTERVAL_MS,
   onRun: (err, report) => {
     if (err) console.warn(`[memory] hợp nhất thất bại: ${err.message}`)
     else if (report.consumed > 0) {

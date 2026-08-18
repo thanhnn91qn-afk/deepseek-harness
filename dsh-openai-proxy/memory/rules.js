@@ -8,9 +8,13 @@
  * getting denser in signal:
  *
  *   - merge over append   — same `code` updates the existing note
- *   - promote at 3        — seen once is a draft, seen three times is a rule
- *   - expire stale drafts — a draft not reconfirmed within 30 days is dropped
- *   - hard cap            — past MAX_RULES the weakest rule makes way
+ *   - promote at N        — a draft becomes a rule at `promoteAt` sightings
+ *   - expire stale drafts — a draft idle for `draftTtlDays` is dropped
+ *   - hard cap            — past `maxRules` the weakest rule makes way
+ *
+ * All four thresholds are settings (see `config.js`), and draft status is
+ * recomputed from the current `promoteAt` on every read, so retuning takes
+ * effect immediately rather than only for rules seen afterwards.
  *
  * Nothing identifying may land here: every write runs the scrubber's
  * `looksIdentifying` assertion and refuses rather than risk a leak.
@@ -18,15 +22,7 @@
 import { mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
 import { looksIdentifying, scrub } from './scrub.js'
-
-/** Maximum rules retained; past this the weakest is evicted on write. */
-export const MAX_RULES = 80
-
-/** Sightings needed before a draft becomes an established rule. */
-export const PROMOTE_AT = 3
-
-/** Days a draft may go unconfirmed before it expires. */
-export const DRAFT_TTL_DAYS = 30
+import { DEFAULTS } from './config.js'
 
 const DAY_MS = 24 * 60 * 60 * 1000
 
@@ -83,10 +79,15 @@ ${rule.text}
 
 /**
  * Read every rule currently stored.
+ *
+ * Draft status is derived from `count` against the CURRENT `promoteAt` rather
+ * than trusted from the file, so lowering the threshold promotes the rules
+ * that already qualify instead of waiting for them to be seen again.
  * @param {string} vaultDir - vault root.
+ * @param {object} [config] - effective settings.
  * @returns {object[]} rules, newest sighting first.
  */
-export function readRules(vaultDir) {
+export function readRules(vaultDir, config = DEFAULTS) {
   const dir = memoryDir(vaultDir)
   let entries
   try {
@@ -106,11 +107,12 @@ export function readRules(vaultDir) {
     }
     const { meta, body } = parseNote(raw)
     const mtime = statSync(full).mtimeMs
+    const count = Number.isInteger(meta.count) ? meta.count : 1
     rules.push({
       file: name,
       code: typeof meta.code === 'string' && meta.code !== '' ? meta.code : path.basename(name, '.md'),
-      draft: meta.draft !== false,
-      count: Number.isInteger(meta.count) ? meta.count : 1,
+      draft: count < config.promoteAt,
+      count,
       firstSeen: meta.firstSeen ?? new Date(mtime).toISOString(),
       lastSeen: meta.lastSeen ?? new Date(mtime).toISOString(),
       text: body,
@@ -138,9 +140,10 @@ function weakestFirst(a, b) {
  * rule's reviewed phrasing is not churned by later paraphrases.
  * @param {string} vaultDir - vault root.
  * @param {{code: string, text: string, seenAt?: string, times?: number}} sighting - observation to record.
+ * @param {object} [config] - effective settings.
  * @returns {{status: 'created'|'merged'|'rejected', rule?: object, reason?: string}} outcome.
  */
-export function upsertRule(vaultDir, sighting) {
+export function upsertRule(vaultDir, sighting, config = DEFAULTS) {
   const text = scrub(String(sighting.text ?? '')).trim()
   if (text === '') return { status: 'rejected', reason: 'empty' }
   if (looksIdentifying(text)) return { status: 'rejected', reason: 'identifying' }
@@ -151,7 +154,7 @@ export function upsertRule(vaultDir, sighting) {
   const dir = memoryDir(vaultDir)
   mkdirSync(dir, { recursive: true })
 
-  const existing = readRules(vaultDir).find(r => r.code === code)
+  const existing = readRules(vaultDir, config).find(r => r.code === code)
   const rule = existing === undefined
     ? { code, draft: true, count: times, firstSeen: seenAt, lastSeen: seenAt, text }
     : {
@@ -160,10 +163,10 @@ export function upsertRule(vaultDir, sighting) {
         lastSeen: seenAt,
         text: existing.draft ? text : existing.text,
       }
-  rule.draft = rule.count < PROMOTE_AT
+  rule.draft = rule.count < config.promoteAt
 
   writeFileSync(path.join(dir, `${code}.md`), renderNote(rule), 'utf8')
-  enforceLimits(vaultDir, { keepCode: code })
+  enforceLimits(vaultDir, { keepCode: code, config })
   return { status: existing === undefined ? 'created' : 'merged', rule }
 }
 
@@ -173,27 +176,28 @@ export function upsertRule(vaultDir, sighting) {
  * Called after each write, and safe to call on its own (e.g. from a daily
  * job) so drafts still age out on a day with no new sightings.
  * @param {string} vaultDir - vault root.
- * @param {{now?: number, keepCode?: string}} [options] - injected clock and a rule exempt from eviction.
+ * @param {{now?: number, keepCode?: string, config?: object}} [options] - injected clock, an exempt rule, and settings.
  * @returns {{expired: string[], evicted: string[]}} codes removed by each policy.
  */
 export function enforceLimits(vaultDir, options = {}) {
+  const config = options.config ?? DEFAULTS
   const now = options.now ?? Date.now()
   const dir = memoryDir(vaultDir)
   const expired = []
   const evicted = []
 
-  let rules = readRules(vaultDir)
+  let rules = readRules(vaultDir, config)
 
   for (const rule of rules) {
     if (!rule.draft) continue
     if (rule.code === options.keepCode) continue
-    if (now - Date.parse(rule.lastSeen) <= DRAFT_TTL_DAYS * DAY_MS) continue
+    if (now - Date.parse(rule.lastSeen) <= config.draftTtlDays * DAY_MS) continue
     rmSync(path.join(dir, rule.file), { force: true })
     expired.push(rule.code)
   }
 
-  rules = readRules(vaultDir).sort(weakestFirst)
-  while (rules.length > MAX_RULES) {
+  rules = readRules(vaultDir, config).sort(weakestFirst)
+  while (rules.length > config.maxRules) {
     const victim = rules.shift()
     if (victim === undefined) break
     if (victim.code === options.keepCode) continue

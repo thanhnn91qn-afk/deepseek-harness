@@ -22,4 +22,9 @@ export const WELCOME_NOTICE_COPY = {
     body: "DeepSeek Harness 0.1 remains in testing for Harness developers. Many areas need further improvement, and we welcome feedback from the developer community. DeepSeek Harness's core plugins and foundational APIs will continue to evolve rapidly over the coming months.\n\nWe look forward to exploring the limits of intelligence with developers around the world, building on open-source, open, reusable, and composable infrastructure. We welcome Harness developers everywhere to join the DSH plugin ecosystem.",
     continueLabel: 'Continue',
   },
+  vi: {
+    title: 'Thông báo thử nghiệm nội bộ',
+    body: 'DeepSeek Harness phiên bản 0.1 hiện vẫn đang trong giai đoạn thử nghiệm dành cho các nhà phát triển Harness, còn nhiều phần cần tiếp tục cải thiện và hoàn thiện, rất mong nhận được góp ý từ cộng đồng phát triển. Các plugin lõi và API nền tảng của DeepSeek Harness dự kiến sẽ tiếp tục được cập nhật nhanh và liên tục trong thời gian tới.\n\nChúng tôi mong muốn cùng các nhà phát triển trên toàn cầu khám phá giới hạn của trí tuệ, trên nền tảng hạ tầng mã nguồn mở, cởi mở, có thể tái sử dụng và kết hợp. Chào mừng các nhà phát triển Harness trên toàn thế giới tham gia hệ sinh thái plugin DSH.',
+    continueLabel: 'Tiếp tục',
+  },
 } as const

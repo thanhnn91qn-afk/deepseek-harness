@@ -62,3 +62,21 @@ export const en: Record<TrajectoryKey, string> = {
   'toolbar.search': 'Search trajectory',
   'toolbar.searchPlaceholder': 'Search',
 }
+
+/** Vietnamese dictionary. */
+export const vi: Record<TrajectoryKey, string> = {
+  'view.trajectory': 'Quỹ đạo',
+  'toolbar.aria': 'Thanh công cụ quỹ đạo',
+  'toolbar.duration': 'Thời lượng',
+  'toolbar.useActualDuration': 'Dùng thời lượng thực tế',
+  'toolbar.useEqualWidth': 'Dùng thao tác độ rộng bằng nhau',
+  'toolbar.actualTime': 'Thời gian thực tế',
+  'toolbar.turns': 'Lượt',
+  'toolbar.expandTurns': 'Mở rộng lượt',
+  'toolbar.collapseTurns': 'Thu gọn lượt',
+  'toolbar.calls': 'Lệnh gọi',
+  'toolbar.expandCalls': 'Mở rộng lệnh gọi',
+  'toolbar.collapseCalls': 'Thu gọn lệnh gọi',
+  'toolbar.search': 'Tìm trong quỹ đạo',
+  'toolbar.searchPlaceholder': 'Tìm kiếm',
+}

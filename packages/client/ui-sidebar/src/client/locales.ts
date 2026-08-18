@@ -18,3 +18,11 @@ export const en = {
   'toggle.open': 'Open sidebar',
   'toggle.collapse': 'Collapse sidebar',
 } satisfies Record<SidebarKey, string>
+
+/** Vietnamese dictionary, checked complete against the zh key set. */
+export const vi = {
+  'session.new': 'Phiên mới',
+  'session.new.label': 'Tạo phiên mới',
+  'toggle.open': 'Mở thanh bên',
+  'toggle.collapse': 'Thu gọn thanh bên',
+} satisfies Record<SidebarKey, string>

@@ -77,5 +77,42 @@ export const en: Record<SubagentKey, string> = {
   'readonly.body': 'The parent session is offline; reopen it to continue sending messages.',
 }
 
+/** Vietnamese dictionary, key-identical to the Chinese source of truth. */
+export const vi: Record<SubagentKey, string> = {
+  'diagnostic.corrupt': 'Bản ghi phiên bị hỏng',
+  'diagnostic.unsupported': 'Phiên bản bản ghi subagent không được hỗ trợ',
+  'diagnostic.unavailable': 'Bản ghi phiên tạm thời không khả dụng',
+  'duration.seconds': '{seconds}s',
+  'duration.minutes': '{minutes}p {seconds}s',
+  'duration.hours': '{hours}g {minutes}p {seconds}s',
+  'duration.days': '{days} ngày',
+  'duration.daysHours': '{days} ngày {hours} giờ',
+  'duration.months': '~{months} tháng',
+  'duration.monthsDays': '~{months} tháng {days} ngày',
+  'duration.years': '~{years} năm',
+  'duration.yearsMonths': '~{years} năm {months} tháng',
+  'duration.exactDays': '{days} ngày {hours}g {minutes}p {seconds}s',
+  'duration.exactTitle': 'Tổng thời gian hoạt động: {duration}',
+  'loading.label': 'Đang tải subagent…',
+  'loading.aria': 'Đang tải subagent',
+  'load.error': 'Không thể tải subagent',
+  'retry': 'Thử lại',
+  'mode.oneShot': 'một lần',
+  'mode.continuable': 'có thể tiếp tục',
+  'activity.running': 'đang chạy',
+  'activity.inactive': 'hiện không chạy',
+  'branch.collapse': 'Thu gọn các subagent con của {label}',
+  'branch.expand': 'Mở rộng các subagent con của {label}',
+  'count.total.one': '{count} subagent',
+  'count.total.other': '{count} subagent',
+  'count.running.one': '{count} subagent đang chạy',
+  'count.running.other': '{count} subagent đang chạy',
+  'tree.aria': 'Phiên subagent',
+  'readonly.oneShot.title': 'Bản ghi subagent một lần',
+  'readonly.title': 'Subagent này hiện chỉ ở chế độ chỉ đọc',
+  'readonly.oneShot.body': 'Tác vụ một lần không nhận tin nhắn tiếp theo; xem toàn bộ bản ghi thực thi tại đây.',
+  'readonly.body': 'Phiên cha hiện không trực tuyến; hãy mở lại phiên cha để tiếp tục gửi tin nhắn.',
+}
+
 /** Key domain of the `subagent` namespace (zh is the source of truth). */
 export type SubagentKey = keyof typeof zh

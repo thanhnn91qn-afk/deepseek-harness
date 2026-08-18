@@ -46,3 +46,25 @@ export const en = {
   failed: 'Mount failed',
   unloading: 'Unloading',
 } satisfies Record<PluginInventoryLocaleKey, string>
+
+/** Vietnamese dictionary checked against the Chinese key set. */
+export const vi = {
+  tab: 'Danh sách plugin',
+  loading: 'Đang đọc plugin…',
+  error: 'Plugin tạm thời không khả dụng.',
+  retry: 'Thử lại',
+  search: 'Tìm plugin',
+  catalog: 'Danh sách plugin',
+  empty: 'Không có plugin nào.',
+  emptySearch: 'Không có plugin phù hợp.',
+  enabledTag: 'Đã bật',
+  disabledTag: 'Đã tắt',
+  configuration: 'Trạng thái cấu hình',
+  cordis: 'Trạng thái Cordis',
+  unobserved: 'Chưa mount',
+  pending: 'Đang chờ phụ thuộc',
+  loadingPhase: 'Đang tải',
+  active: 'Đã mount',
+  failed: 'Mount thất bại',
+  unloading: 'Đang gỡ',
+} satisfies Record<PluginInventoryLocaleKey, string>

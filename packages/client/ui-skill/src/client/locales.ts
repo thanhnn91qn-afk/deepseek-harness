@@ -23,3 +23,12 @@ export const en = {
   'row.instructions': 'Instructions',
   'menu.userOnly': 'user-only',
 } satisfies Record<SkillKey, string>
+
+/** Vietnamese dictionary, checked complete against the zh key set. */
+export const vi = {
+  'row.running': 'Đang tải skill',
+  'row.failed': 'Tải skill thất bại',
+  'row.stopped': 'Đã dừng tải skill',
+  'row.instructions': 'Hướng dẫn',
+  'menu.userOnly': 'chỉ người dùng',
+} satisfies Record<SkillKey, string>

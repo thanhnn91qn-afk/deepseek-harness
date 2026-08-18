@@ -141,6 +141,72 @@ export const zh: Record<AgentPresetSettingsKey, string> = {
   deleting: '正在删除…',
 }
 
+/** Vietnamese copy. */
+export const vi: Record<AgentPresetSettingsKey, string> = {
+  title: 'Preset Agent',
+  description: 'Áp dụng cho các phiên bắt đầu từ bây giờ. Phiên đang chạy giữ nguyên preset lúc khởi động.',
+  loading: 'Đang tải preset…',
+  error: 'Không thể tải preset Agent.',
+  userTrust: 'Tùy chỉnh',
+  seatHint: 'Preset Agent cho phiên bạn sắp bắt đầu',
+  headerHint: 'Preset Agent mà phiên này đang chạy, cố định từ lúc bắt đầu',
+  nav: 'Preset Agent',
+  sectionIntro:
+    'Preset là tổ hợp plugin mà Agent của một phiên chạy — công cụ, prompt và năng lực của nó. '
+    + 'Hãy sao chép một preset có sẵn rồi chỉnh theo ý bạn, hoặc để Agent soạn giúp bằng chế độ Sáng tạo.',
+  builtIn: 'Có sẵn',
+  setDefault: 'Đặt làm mặc định',
+  view: 'Xem',
+  presetStandardName: 'Chế độ tiêu chuẩn',
+  presetStandardDescription:
+    'Agent lập trình đầy đủ với chỉnh sửa tệp, shell, tìm kiếm tệp và web, skill, lập kế hoạch, mục tiêu, subagent và workflow.',
+  presetCodeName: 'Chế độ PTC',
+  presetCodeDescription:
+    'Đầy đủ năng lực của chế độ tiêu chuẩn, với công cụ được cung cấp qua Code Mode SDK để mô hình gộp nhiều bước thao tác trong một chương trình TypeScript.',
+  presetMinimalName: 'Chế độ tối giản',
+  presetMinimalDescription:
+    'Agent lập trình hai công cụ với bash thường trực và str_replace_editor.',
+  presetCordisName: 'Chế độ Sáng tạo',
+  presetCordisDescription:
+    'Dành cho việc tạo preset Agent tùy chỉnh, có đầy đủ năng lực của chế độ tiêu chuẩn cùng kiểm tra runtime, thử nghiệm plugin và hướng dẫn tạo preset.',
+  duplicate: 'Sao chép',
+  duplicateUnavailable: 'Bản triển khai này không có thư mục preset có thể ghi',
+  delete: 'Xóa',
+  presetId: 'Định danh',
+  presetIdPlaceholder: 'my-agent',
+  displayName: 'Tên',
+  displayNamePlaceholder: 'Hiển thị trong bộ chọn; mặc định dùng định danh',
+  inUse: 'Đang dùng',
+  builtInGroup: 'Có sẵn',
+  customGroup: 'Tùy chỉnh',
+  noDescription: 'Không có mô tả.',
+  brokenBadge: 'Tải thất bại',
+  brokenNoCopy: 'Preset tải thất bại không thể sao chép',
+  copyOf: 'Sao chép từ',
+  composition: 'Tổ hợp (agent.cordis.yml)',
+  cancel: 'Hủy',
+  close: 'Đóng',
+  retry: 'Thử lại',
+  copyTitle: 'Sao chép preset',
+  copyIntro:
+    'Toàn bộ preset sẽ được sao chép trên máy này. Định danh trở thành tên thư mục và không thể '
+    + 'đổi sau này; mọi thứ khác được chỉnh sửa trực tiếp trong tệp của preset.',
+  create: 'Tạo',
+  creating: 'Đang tạo…',
+  creatorDraft: 'Soạn preset tùy chỉnh bằng chế độ Sáng tạo',
+  openLocation: 'Mở thư mục',
+  showLocation: 'Xem vị trí',
+  revealedPathLabel: 'Tệp preset:',
+  idRequired: 'Hãy đặt định danh cho preset.',
+  idInvalid: 'Chỉ dùng chữ thường, số và dấu gạch ngang, bắt đầu bằng chữ hoặc số.',
+  idTaken: 'Đã tồn tại preset với định danh này.',
+  deleteTitle: 'Xóa preset này?',
+  deleteDescription:
+    'Thư mục preset sẽ bị xóa. Các phiên đang chạy trên preset này vẫn tiếp tục hoạt động; phiên mới sẽ không thể chọn nó nữa.',
+  deleteConfirm: 'Xóa',
+  deleting: 'Đang xóa…',
+}
+
 /** Preset roster fields needed to resolve Web display copy. */
 export interface PresetDisplaySource {
   /** Stable preset id. */

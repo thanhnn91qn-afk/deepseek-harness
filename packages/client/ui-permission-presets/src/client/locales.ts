@@ -29,6 +29,19 @@ export const en = {
   'confirm.enable': 'Enable Full access',
 } satisfies Record<PermissionSettingsKey, string>
 
+/** Vietnamese dictionary, checked complete against the zh key set. */
+export const vi = {
+  'title': 'Quyền hạn',
+  'description': 'Chọn chế độ quyền hạn mặc định cho session mới',
+  'loading': 'Đang tải',
+  'unavailable': 'Không khả dụng',
+  'confirm.title': 'Xác nhận bật Full access?',
+  'confirm.description': 'Khi bật Full access, session mới sẽ giảm bớt bước xác nhận và có thể trực tiếp thực hiện nhiều thao tác hơn, bao gồm các thao tác nhạy cảm, thay đổi file hoặc lệnh bên ngoài. Chỉ nên dùng khi bạn tin tưởng các tác vụ tiếp theo.',
+  'confirm.acknowledge': 'Tôi đã hiểu rủi ro và muốn tiếp tục',
+  'confirm.cancel': 'Hủy',
+  'confirm.enable': 'Bật Full access',
+} satisfies Record<PermissionSettingsKey, string>
+
 /** Simplified Chinese dictionary for the current-session popup gate. */
 export const accessZh = {
   'confirm.title': '确认启用 Full access？',
@@ -48,4 +61,13 @@ export const accessEn = {
   'confirm.acknowledge': 'I understand the risks and want to continue',
   'confirm.cancel': 'Cancel',
   'confirm.enable': 'Enable Full access',
+} satisfies Record<PermissionAccessKey, string>
+
+/** Vietnamese dictionary for the current-session popup gate. */
+export const accessVi = {
+  'confirm.title': 'Xác nhận bật Full access?',
+  'confirm.description': 'Khi bật Full access, agent sẽ giảm bớt bước xác nhận và có thể trực tiếp thực hiện nhiều thao tác hơn, bao gồm các thao tác nhạy cảm, thay đổi file hoặc lệnh bên ngoài. Chỉ nên dùng khi bạn tin tưởng tác vụ hiện tại.',
+  'confirm.acknowledge': 'Tôi đã hiểu rủi ro và muốn tiếp tục',
+  'confirm.cancel': 'Hủy',
+  'confirm.enable': 'Bật Full access',
 } satisfies Record<PermissionAccessKey, string>

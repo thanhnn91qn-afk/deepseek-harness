@@ -1,15 +1,25 @@
 import express from 'express'
 import { randomUUID } from 'node:crypto'
 import { spawn } from 'node:child_process'
-import { mkdirSync } from 'node:fs'
+import { mkdirSync, existsSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
+/**
+ * Support both layouts: dsh-openai-proxy nested inside the deepseek-harness
+ * repo itself (apps/ is a direct sibling — the current repo layout), or an
+ * older layout where deepseek-harness/ sits next to dsh-openai-proxy/.
+ */
+function resolveDshBin() {
+  const nested = path.resolve(__dirname, '../apps/cli/lib/bin.js')
+  if (existsSync(nested)) return nested
+  return path.resolve(__dirname, '../deepseek-harness/apps/cli/lib/bin.js')
+}
+
 const PORT = Number(process.env.PORT ?? 8787)
-const DSH_BIN = process.env.DSH_BIN_PATH
-  ?? path.resolve(__dirname, '../deepseek-harness/apps/cli/lib/bin.js')
+const DSH_BIN = process.env.DSH_BIN_PATH ?? resolveDshBin()
 const DSH_CWD = process.env.DSH_CWD ?? path.resolve(__dirname, 'workspace')
 const DSH_TIMEOUT_MS = Number(process.env.DSH_TIMEOUT_MS ?? 120_000)
 const MODEL_NAME = process.env.MODEL_NAME ?? 'dsh-agent'

@@ -38,3 +38,6 @@ apps/web/dist/
 worktrees/
 .agents/worktrees/
 .typert-*/
+
+# DshStack tooling build output (built by setup.bat, not source)
+/DshStack.exe

@@ -23,7 +23,15 @@ public partial class Form1 : Form
         InitializeComponent();
 
         string root = AppContext.BaseDirectory;
-        string harnessDir = Path.Combine(root, "deepseek-harness");
+        // Support both layouts: the exe sitting at the deepseek-harness repo
+        // root itself (apps/ is a direct child — the current repo layout,
+        // where dsh-openai-proxy/ and DshStackLauncher/ are subfolders of the
+        // harness repo), or an older layout where deepseek-harness/ is a
+        // sibling folder next to the exe.
+        string nestedHarnessDir = Path.Combine(root, "deepseek-harness");
+        string harnessDir = File.Exists(Path.Combine(nestedHarnessDir, "apps", "cli", "lib", "bin.js"))
+            ? nestedHarnessDir
+            : root;
         string proxyDir = Path.Combine(root, "dsh-openai-proxy");
         string dshBin = Path.Combine(harnessDir, "apps", "cli", "lib", "bin.js");
         string proxyEntry = Path.Combine(proxyDir, "server.js");

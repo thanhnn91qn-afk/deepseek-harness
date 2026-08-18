@@ -64,11 +64,20 @@ popd
 
 echo [5/6] Checking model provider config...
 if not exist "%USERPROFILE%\.dsh" mkdir "%USERPROFILE%\.dsh"
+set "HAVE_PROVIDER=0"
 if exist "%USERPROFILE%\.dsh\settings.yaml" (
-  echo       %USERPROFILE%\.dsh\settings.yaml already exists, leaving it as-is.
+  findstr /c:"llm-pi-ai:" "%USERPROFILE%\.dsh\settings.yaml" >nul 2>nul && set "HAVE_PROVIDER=1"
+)
+if "!HAVE_PROVIDER!"=="1" (
+  echo       %USERPROFILE%\.dsh\settings.yaml already has an llm-pi-ai section, leaving it as-is.
 ) else (
-  echo       Creating %USERPROFILE%\.dsh\settings.yaml with the LM Studio provider...
+  rem dsh itself creates settings.yaml on first run (e.g. the onboarding
+  rem notice), so the file existing is not proof the provider is configured -
+  rem append rather than overwrite either way; this also creates the file
+  rem fresh when it's missing entirely.
+  echo       Adding the LM Studio provider to %USERPROFILE%\.dsh\settings.yaml...
   (
+    echo(
     echo llm-pi-ai:
     echo   providers:
     echo     lmstudio:
@@ -82,7 +91,7 @@ if exist "%USERPROFILE%\.dsh\settings.yaml" (
     echo agent-default-model:
     echo   provider: lmstudio
     echo   model: google/gemma-4-12b
-  ) > "%USERPROFILE%\.dsh\settings.yaml"
+  ) >> "%USERPROFILE%\.dsh\settings.yaml"
   echo       Done. Edit that file if LM Studio runs at a different address.
 )
 

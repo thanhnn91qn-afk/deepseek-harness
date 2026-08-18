@@ -19,6 +19,7 @@ function resolveDshBin() {
 }
 
 const PORT = Number(process.env.PORT ?? 8787)
+const BIND_HOST = process.env.BIND_HOST ?? '127.0.0.1'
 const DSH_BIN = process.env.DSH_BIN_PATH ?? resolveDshBin()
 const DSH_CWD = process.env.DSH_CWD ?? path.resolve(__dirname, 'workspace')
 const DSH_TIMEOUT_MS = Number(process.env.DSH_TIMEOUT_MS ?? 120_000)
@@ -141,7 +142,12 @@ app.post('/v1/chat/completions', async (req, res) => {
   })
 })
 
-app.listen(PORT, '127.0.0.1', () => {
-  console.log(`dsh-openai-proxy listening on http://127.0.0.1:${PORT}`)
-  console.log('No auth required (local only). Point your app at this base_url with any api_key value.')
+app.listen(PORT, BIND_HOST, () => {
+  console.log(`dsh-openai-proxy listening on http://${BIND_HOST}:${PORT}`)
+  if (BIND_HOST === '0.0.0.0') {
+    console.log('WARNING: bound to all interfaces (LAN-reachable) with no authentication.')
+    console.log('Anyone on the network can call this endpoint. Only use on a trusted LAN.')
+  } else {
+    console.log('No auth required (local only). Point your app at this base_url with any api_key value.')
+  }
 })

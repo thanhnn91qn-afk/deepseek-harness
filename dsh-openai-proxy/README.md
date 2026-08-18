@@ -1,10 +1,10 @@
 # dsh-openai-proxy
 
-OpenAI-compatible `/v1/chat/completions` wrapper around a local [`dsh`](../deepseek-harness) (DeepSeek Harness) headless agent. Point any OpenAI-client app at this server instead of `api.openai.com`.
+OpenAI-compatible `/v1/chat/completions` wrapper around a local `dsh` (DeepSeek Harness) headless agent. Point any OpenAI-client app at this server instead of `api.openai.com`.
 
-It does not modify the `deepseek-harness` checkout — it shells out to the built `dsh` CLI (`--profile headless`) as a subprocess per request and translates the result into the OpenAI response shape.
+It does not modify the harness — it shells out to the built `dsh` CLI (`--profile headless`) as a subprocess per request and translates the result into the OpenAI response shape. It lives inside this `deepseek-harness` checkout, as a sibling of `apps/`.
 
-No authentication — this is meant for `127.0.0.1` only, on a personal/dev machine. The server binds to `127.0.0.1`, not `0.0.0.0`, so it isn't reachable from the LAN.
+No authentication. By default it binds to `127.0.0.1` only (not reachable from the LAN); see [LAN access and its risk](#lan-access-and-its-risk) before changing that.
 
 ## How it works
 
@@ -16,15 +16,13 @@ No authentication — this is meant for `127.0.0.1` only, on a personal/dev mach
 
 ## Requirements
 
-- `deepseek-harness` cloned and built (`pnpm install && pnpm run build`) as a sibling directory (default expected at `../deepseek-harness`).
+- This `deepseek-harness` checkout built (`pnpm install && pnpm run build` from the repo root, or run `setup.bat`).
 - `$DSH_HOME/settings.yaml` configured with your provider/model (e.g. a local LM Studio endpoint) and `agent-default-model` pointing at it.
 - Node.js.
 
-## Run (one file)
+## Run
 
-Double-click **`run.cmd`** in this folder. First run installs dependencies automatically, then starts the server at `http://127.0.0.1:8787/v1`. Leave the window open while you use it; close it to stop the server.
-
-## Run (manual)
+Started automatically by `DshStack.exe` (see the repo root), or manually:
 
 ```sh
 npm install
@@ -36,7 +34,8 @@ npm start
 | Variable | Default | Purpose |
 |---|---|---|
 | `PORT` | `8787` | HTTP port. |
-| `DSH_BIN_PATH` | `../deepseek-harness/apps/cli/lib/bin.js` | Path to the built `dsh` CLI entry point. |
+| `BIND_HOST` | `127.0.0.1` | Interface to listen on. Set to `0.0.0.0` to accept LAN connections — see the security warning below first. |
+| `DSH_BIN_PATH` | `../apps/cli/lib/bin.js` | Path to the built `dsh` CLI entry point. |
 | `DSH_CWD` | `./workspace` | Working directory `dsh` runs in (its default filesystem workspace). |
 | `DSH_TIMEOUT_MS` | `120000` | Kill the `dsh` subprocess if it doesn't finish in time. |
 | `MODEL_NAME` | `dsh-agent` | Cosmetic value returned in the response's `model` field. |
@@ -74,10 +73,20 @@ Configure your app the same way you would for OpenAI, but with:
 - `base_url`: `http://127.0.0.1:8787/v1`
 - `api_key`: any non-empty string (ignored — no auth check)
 
+## LAN access and its risk
+
+By default this proxy (and `dsh web` itself) only accept connections from the same machine. `dsh`'s own web app *refuses* to bind a LAN interface for a documented reason:
+
+> `--host 0.0.0.0 is intentionally not supported yet for safety: it would expose remote code execution to the network`
+
+The `dsh` agent can run shell commands and edit files on the host machine. Neither `dsh web` nor this proxy have a login or API-key check. Opening either to the LAN means **any device on that network can drive the agent and run arbitrary commands on this machine** — there is no authentication layer to stop them, only reachability.
+
+`../enable-lan-access.bat` (repo root, run as Administrator) does open both up anyway — for a home LAN you fully trust, that may be an acceptable trade-off. It requires typing `YES` to confirm and prints the exact commands to undo it afterward. Read the warning it prints before typing `YES`.
+
 ## Known limitations
 
 - Only the last `user` message is sent to `dsh`; prior conversation turns, `system` messages, and multi-turn history are not forwarded (each request is a fresh `dsh` headless session).
 - No real token streaming — `stream: true` returns the complete answer as one SSE chunk.
 - `usage` token counts are always `0` (`dsh` headless mode doesn't report them).
 - The request's `model` field does not select the `dsh` provider/model; that's controlled by `$DSH_HOME/settings.yaml`'s `agent-default-model` section on the harness side.
-- No auth. Do not expose this port beyond `127.0.0.1`.
+- No auth, ever — see [LAN access and its risk](#lan-access-and-its-risk).

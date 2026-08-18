@@ -24,6 +24,12 @@ setup.bat
 
 `setup.bat` tự cài pnpm (nếu thiếu), cài dependency, build `dsh`, build proxy, và build `DshStackLauncher` thành `DshStack.exe`. Xong thì chạy `DshStack.exe` là có cả Web UI lẫn proxy.
 
+## Truy cập qua LAN (tùy chọn — có rủi ro)
+
+Mặc định cả Web UI (`3080`) lẫn proxy (`8787`) chỉ nghe trên `127.0.0.1`, máy khác trong mạng không vào được. `dsh` **cố tình** chặn cứng việc mở ra LAN vì agent của nó chạy được lệnh shell, sửa file trên máy — mở ra ngoài mà không có đăng nhập nào nghĩa là **bất kỳ thiết bị nào trong mạng cũng chiếm được quyền điều khiển máy này**.
+
+Nếu vẫn muốn mở (chỉ nên làm trên mạng nhà tin cậy tuyệt đối): chuột phải [`enable-lan-access.bat`](enable-lan-access.bat) → **Run as administrator**. Script sẽ in cảnh báo đầy đủ và yêu cầu gõ `YES` mới chạy tiếp. Đọc kỹ trước khi xác nhận.
+
 ---
 
 Toàn bộ phần trên là bổ sung thêm; không có gì trong `packages/`, `apps/` hay các thư mục gốc khác của upstream bị xóa (ngoại trừ phần đã sửa để thêm locale tiếng Việt — xem lịch sử commit để biết chi tiết diff so với `master` gốc của deepseek-ai).

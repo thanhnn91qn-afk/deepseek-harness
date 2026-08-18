@@ -1,4 +1,7 @@
 using System.Diagnostics;
+using System.Linq;
+using System.Net;
+using System.Net.Sockets;
 
 namespace DshStackLauncher;
 
@@ -36,15 +39,24 @@ public partial class Form1 : Form
         string dshBin = Path.Combine(harnessDir, "apps", "cli", "lib", "bin.js");
         string proxyEntry = Path.Combine(proxyDir, "server.js");
 
+        // dsh's own web server always binds 127.0.0.1 (it refuses --host
+        // 0.0.0.0), so LAN access needs `netsh portproxy` forwarding a LAN
+        // port to it (see enable-lan-access.bat) plus --trusted-host so its
+        // browser-trust fence accepts requests whose Host header is a LAN
+        // address rather than localhost.
+        string webArgs = $"\"{dshBin}\" web";
+        foreach (var ip in LocalLanAddresses()) webArgs += $" --trusted-host {ip}";
+
         _web = new ManagedService(
             "web", "http://127.0.0.1:3080",
-            "node", $"\"{dshBin}\" web", harnessDir,
+            "node", webArgs, harnessDir,
             new Dictionary<string, string> { ["LMSTUDIO_API_KEY"] = "lm-studio" }, _job, AppendLog);
 
         _proxy = new ManagedService(
             "proxy", "http://127.0.0.1:8787/v1",
             "node", $"\"{proxyEntry}\"", proxyDir,
-            new Dictionary<string, string> { ["LMSTUDIO_API_KEY"] = "lm-studio" }, _job, AppendLog);
+            new Dictionary<string, string> { ["LMSTUDIO_API_KEY"] = "lm-studio", ["BIND_HOST"] = "0.0.0.0" },
+            _job, AppendLog);
 
         BuildUi();
 
@@ -96,6 +108,22 @@ public partial class Form1 : Form
         if (span.TotalHours >= 1) return $"{(int)span.TotalHours}h {span.Minutes}m {span.Seconds}s";
         if (span.TotalMinutes >= 1) return $"{span.Minutes}m {span.Seconds}s";
         return $"{span.Seconds}s";
+    }
+
+    /// <summary>This machine's LAN-facing IPv4 addresses, for dsh web's --trusted-host.</summary>
+    private static IEnumerable<string> LocalLanAddresses()
+    {
+        try
+        {
+            return Dns.GetHostEntry(Dns.GetHostName()).AddressList
+                .Where(ip => ip.AddressFamily == AddressFamily.InterNetwork)
+                .Select(ip => ip.ToString())
+                .Distinct();
+        }
+        catch
+        {
+            return [];
+        }
     }
 
     private void BuildUi()

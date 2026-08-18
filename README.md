@@ -30,6 +30,8 @@ setup.bat
 
 **Không có đăng nhập nào** ở cả Web UI lẫn proxy. Nghĩa là **bất kỳ thiết bị nào trong cùng mạng LAN (kể cả thiết bị lạ, IoT, khách...) đều có thể mở trình duyệt vào và điều khiển máy này qua agent** — chạy lệnh, đọc/sửa file tùy ý. Chỉ dùng trên mạng bạn tin cậy tuyệt đối. Muốn quay lại chỉ nghe `127.0.0.1` thì sửa `--host 0.0.0.0` thành `--host 127.0.0.1` và bỏ `BIND_HOST=0.0.0.0` trong [`DshStackLauncher/Form1.cs`](DshStackLauncher/Form1.cs), build lại.
 
+Fork này còn gỡ thêm **1 lớp bảo vệ nữa**: mặc định upstream luôn khoá `127.0.0.1`-only cho nhóm API cấu hình/credential (`settings.*`, `credentials.*`, `agentPreset.read/copy/remove`, `host.pickDirectory/openPath`, `llm.discoverModels`) — kể cả khi đã khai `trustedHosts` — vì `trustedHosts` chỉ chống DNS-rebinding, không phải xác thực thật. Fork này đã cho nhóm này đi qua cùng `trustedHosts` như mọi API khác (xem [`packages/client/connection/src/index.ts`](packages/client/connection/src/index.ts), `PRIVILEGED_METHODS`), để Settings/Models dùng được từ LAN. Hệ quả: **bất kỳ máy nào trong LAN cũng đọc được có credential nào đang cấu hình, sửa được toàn bộ cấu hình app, duyệt được đường dẫn ổ đĩa máy chủ**. Chỉ nên bật nếu mạng nhà tin cậy tuyệt đối.
+
 ---
 
 Toàn bộ phần trên là bổ sung thêm; không có gì trong `packages/`, `apps/` hay các thư mục gốc khác của upstream bị xóa (ngoại trừ phần đã sửa để thêm locale tiếng Việt — xem lịch sử commit để biết chi tiết diff so với `master` gốc của deepseek-ai).

@@ -3,9 +3,23 @@ setlocal enabledelayedexpansion
 cd /d "%~dp0"
 
 echo ============================================
-echo  DeepSeek Harness stack - one-time setup
+echo  DeepSeek Harness stack - setup / update
 echo ============================================
 echo.
+
+if exist ".git" (
+  where git >nul 2>nul
+  if not errorlevel 1 (
+    echo [0/5] Pulling latest changes from GitHub...
+    git pull
+    if errorlevel 1 (
+      echo [WARN] git pull failed - continuing with the code already on disk.
+      echo        ^(commonly local edits conflicting with the update; resolve
+      echo        manually with "git status" / "git stash" then re-run.^)
+    )
+    echo.
+  )
+)
 
 where node >nul 2>nul
 if errorlevel 1 (

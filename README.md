@@ -24,11 +24,11 @@ setup.bat
 
 `setup.bat` tự cài pnpm (nếu thiếu), cài dependency, build `dsh`, build proxy, và build `DshStackLauncher` thành `DshStack.exe`. Xong thì chạy `DshStack.exe` là có cả Web UI lẫn proxy.
 
-## Truy cập qua LAN (tùy chọn — có rủi ro)
+## Truy cập qua LAN — mặc định đã bật, và có rủi ro thật
 
-Mặc định cả Web UI (`3080`) lẫn proxy (`8787`) chỉ nghe trên `127.0.0.1`, máy khác trong mạng không vào được. `dsh` **cố tình** chặn cứng việc mở ra LAN vì agent của nó chạy được lệnh shell, sửa file trên máy — mở ra ngoài mà không có đăng nhập nào nghĩa là **bất kỳ thiết bị nào trong mạng cũng chiếm được quyền điều khiển máy này**.
+`DshStackLauncher` khởi động cả Web UI (`3080`) lẫn proxy (`8787`) nghe trên **tất cả interface** (`0.0.0.0`), không cần chạy thêm gì. Upstream `deepseek-ai/deepseek-harness` **cố tình chặn cứng** `--host 0.0.0.0` vì agent của `dsh` chạy được lệnh shell, sửa file trên máy — fork này đã **gỡ bỏ** chặn đó (xem [`packages/bundle/web-app/src/startup.ts`](packages/bundle/web-app/src/startup.ts)) để phục vụ đúng nhu cầu chạy trong mạng nhà.
 
-Nếu vẫn muốn mở (chỉ nên làm trên mạng nhà tin cậy tuyệt đối): chuột phải [`enable-lan-access.bat`](enable-lan-access.bat) → **Run as administrator**. Script sẽ in cảnh báo đầy đủ và yêu cầu gõ `YES` mới chạy tiếp. Đọc kỹ trước khi xác nhận.
+**Không có đăng nhập nào** ở cả Web UI lẫn proxy. Nghĩa là **bất kỳ thiết bị nào trong cùng mạng LAN (kể cả thiết bị lạ, IoT, khách...) đều có thể mở trình duyệt vào và điều khiển máy này qua agent** — chạy lệnh, đọc/sửa file tùy ý. Chỉ dùng trên mạng bạn tin cậy tuyệt đối. Muốn quay lại chỉ nghe `127.0.0.1` thì sửa `--host 0.0.0.0` thành `--host 127.0.0.1` và bỏ `BIND_HOST=0.0.0.0` trong [`DshStackLauncher/Form1.cs`](DshStackLauncher/Form1.cs), build lại.
 
 ---
 

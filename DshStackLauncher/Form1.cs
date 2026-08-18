@@ -39,12 +39,13 @@ public partial class Form1 : Form
         string dshBin = Path.Combine(harnessDir, "apps", "cli", "lib", "bin.js");
         string proxyEntry = Path.Combine(proxyDir, "server.js");
 
-        // dsh's own web server always binds 127.0.0.1 (it refuses --host
-        // 0.0.0.0), so LAN access needs `netsh portproxy` forwarding a LAN
-        // port to it (see enable-lan-access.bat) plus --trusted-host so its
-        // browser-trust fence accepts requests whose Host header is a LAN
-        // address rather than localhost.
-        string webArgs = $"\"{dshBin}\" web";
+        // Fork change: dsh web binds all interfaces here instead of upstream's
+        // 127.0.0.1-only default, so it (and the proxy) are LAN-reachable with
+        // no extra setup. dsh still checks the request's Host header against
+        // an allowlist, so this machine's own LAN addresses go on
+        // --trusted-host. No login on the web UI or the proxy — see
+        // dsh-openai-proxy/README.md for the tradeoff this accepts.
+        string webArgs = $"\"{dshBin}\" web --host 0.0.0.0";
         foreach (var ip in LocalLanAddresses()) webArgs += $" --trusted-host {ip}";
 
         _web = new ManagedService(
@@ -83,6 +84,22 @@ public partial class Form1 : Form
         _logBox.AppendText(line + Environment.NewLine);
     }
 
+    /// <summary>This machine's LAN-facing IPv4 addresses, for dsh web's --trusted-host.</summary>
+    private static IEnumerable<string> LocalLanAddresses()
+    {
+        try
+        {
+            return Dns.GetHostEntry(Dns.GetHostName()).AddressList
+                .Where(ip => ip.AddressFamily == AddressFamily.InterNetwork)
+                .Select(ip => ip.ToString())
+                .Distinct();
+        }
+        catch
+        {
+            return [];
+        }
+    }
+
     private void RefreshStatus()
     {
         bool webRunning = _web.PollRunning();
@@ -108,22 +125,6 @@ public partial class Form1 : Form
         if (span.TotalHours >= 1) return $"{(int)span.TotalHours}h {span.Minutes}m {span.Seconds}s";
         if (span.TotalMinutes >= 1) return $"{span.Minutes}m {span.Seconds}s";
         return $"{span.Seconds}s";
-    }
-
-    /// <summary>This machine's LAN-facing IPv4 addresses, for dsh web's --trusted-host.</summary>
-    private static IEnumerable<string> LocalLanAddresses()
-    {
-        try
-        {
-            return Dns.GetHostEntry(Dns.GetHostName()).AddressList
-                .Where(ip => ip.AddressFamily == AddressFamily.InterNetwork)
-                .Select(ip => ip.ToString())
-                .Distinct();
-        }
-        catch
-        {
-            return [];
-        }
     }
 
     private void BuildUi()

@@ -8,7 +8,7 @@
 
 import { Command } from 'commander'
 import type { Context } from '@deepseek-ai/cordis'
-import { parseCmdline } from '@deepseek-ai/dsh-cmdline'
+import { internals, parseCmdline } from '@deepseek-ai/dsh-cmdline'
 
 /** Stable Cordis plugin name. */
 export const name = 'web-startup'
@@ -57,9 +57,12 @@ Examples:
 
 /**
  * Parse and provide the Web invocation as an ordinary Cordis service. The
- * command's action publishes the flags this invocation named; `--host 0.0.0.0`
- * or a non-numeric `--port` is a usage error, so on rejection (and on `--help`)
- * nothing is provided.
+ * command's action publishes the flags this invocation named; a non-numeric
+ * `--port` is a usage error, so on rejection (and on `--help`) nothing is
+ * provided. `--host 0.0.0.0` is allowed (fork change — upstream refuses it:
+ * the agent runs shell commands and edits files with no login on the web UI,
+ * so binding all interfaces hands that to the whole LAN); a warning prints
+ * instead of erroring so the operator sees the tradeoff at every boot.
  * @param ctx - plugin context carrying the command line.
  */
 export function apply(ctx: Context): void {
@@ -67,7 +70,7 @@ export function apply(ctx: Context): void {
   program.action(() => {
     const options = program.opts<WebOptions>()
     if (options.host === '0.0.0.0') {
-      program.error('error: --host 0.0.0.0 is intentionally not supported yet for safety: it would expose remote code execution to the network; use 127.0.0.1 instead')
+      internals.stderr.write('WARNING: --host 0.0.0.0 exposes the web UI (and the agent\'s shell/file access, with no login) to the entire network. Only use this on a LAN you fully trust.\n')
     }
     if (options.port !== undefined && !/^\d+$/.test(options.port)) {
       program.error(`error: --port must be a number, got ${JSON.stringify(options.port)}`)

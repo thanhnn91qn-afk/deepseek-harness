@@ -75,13 +75,15 @@ Configure your app the same way you would for OpenAI, but with:
 
 ## LAN access and its risk
 
-By default this proxy (and `dsh web` itself) only accept connections from the same machine. `dsh`'s own web app *refuses* to bind a LAN interface for a documented reason:
+`DshStackLauncher` starts both this proxy and `dsh web` bound to `0.0.0.0` (all interfaces) by default — no extra setup needed, they're reachable from the LAN as soon as the launcher runs.
+
+Upstream `deepseek-ai/deepseek-harness` normally *refuses* to bind `dsh web` to a LAN interface at all:
 
 > `--host 0.0.0.0 is intentionally not supported yet for safety: it would expose remote code execution to the network`
 
-The `dsh` agent can run shell commands and edit files on the host machine. Neither `dsh web` nor this proxy have a login or API-key check. Opening either to the LAN means **any device on that network can drive the agent and run arbitrary commands on this machine** — there is no authentication layer to stop them, only reachability.
+This fork removes that refusal (see [`packages/bundle/web-app/src/startup.ts`](../packages/bundle/web-app/src/startup.ts)) because the whole point of this deployment is LAN reachability. The risk described in that message is real and unchanged: the `dsh` agent can run shell commands and edit files on the host machine, and **neither `dsh web` nor this proxy have a login or API-key check**. Any device on the same LAN can drive the agent and run arbitrary commands on this machine. Only run this on a network you fully trust.
 
-`../enable-lan-access.bat` (repo root, run as Administrator) does open both up anyway — for a home LAN you fully trust, that may be an acceptable trade-off. It requires typing `YES` to confirm and prints the exact commands to undo it afterward. Read the warning it prints before typing `YES`.
+To go back to `127.0.0.1`-only, remove `--host 0.0.0.0` from the `dsh web` launch args and `BIND_HOST=0.0.0.0` from the proxy's env in [`DshStackLauncher/Form1.cs`](../DshStackLauncher/Form1.cs), then rebuild.
 
 ## Known limitations
 

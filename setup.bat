@@ -30,7 +30,7 @@ if errorlevel 1 (
 
 where pnpm >nul 2>nul
 if errorlevel 1 (
-  echo [1/5] Installing pnpm...
+  echo [1/7] Installing pnpm...
   call npm install -g pnpm
   if errorlevel 1 (
     echo [ERROR] Failed to install pnpm.
@@ -38,10 +38,10 @@ if errorlevel 1 (
     exit /b 1
   )
 ) else (
-  echo [1/5] pnpm already installed, skipping.
+  echo [1/7] pnpm already installed, skipping.
 )
 
-echo [2/5] Installing dsh dependencies (this can take a few minutes)...
+echo [2/7] Installing dsh dependencies (this can take a few minutes)...
 call pnpm install
 if errorlevel 1 (
   echo [ERROR] pnpm install failed.
@@ -49,7 +49,7 @@ if errorlevel 1 (
   exit /b 1
 )
 
-echo [3/5] Building dsh...
+echo [3/7] Building dsh...
 call pnpm run build
 if errorlevel 1 (
   echo [ERROR] Build failed.
@@ -57,12 +57,12 @@ if errorlevel 1 (
   exit /b 1
 )
 
-echo [4/6] Installing proxy dependencies...
+echo [4/7] Installing proxy dependencies...
 pushd dsh-openai-proxy
 call npm install
 popd
 
-echo [5/6] Checking model provider config...
+echo [5/7] Checking model provider config...
 if not exist "%USERPROFILE%\.dsh" mkdir "%USERPROFILE%\.dsh"
 set "HAVE_PROVIDER=0"
 if exist "%USERPROFILE%\.dsh\settings.yaml" (
@@ -95,7 +95,37 @@ if "!HAVE_PROVIDER!"=="1" (
   echo       Done. Edit that file if LM Studio runs at a different address.
 )
 
-echo [6/6] Checking for .NET 8 SDK...
+echo [6/7] Checking Obsidian vault MCP connection...
+where mcp-server-filesystem >nul 2>nul
+if errorlevel 1 (
+  echo       Installing mcp-server-filesystem globally...
+  call npm install -g @modelcontextprotocol/server-filesystem
+)
+if not exist "%USERPROFILE%\Documents\dsh-vault" mkdir "%USERPROFILE%\Documents\dsh-vault"
+if not exist "%USERPROFILE%\.dsh" mkdir "%USERPROFILE%\.dsh"
+set "HAVE_VAULT_MCP=0"
+if exist "%USERPROFILE%\.dsh\cordis.patch.yml" (
+  findstr /c:"mcp-obsidian-vault" "%USERPROFILE%\.dsh\cordis.patch.yml" >nul 2>nul && set "HAVE_VAULT_MCP=1"
+)
+if "!HAVE_VAULT_MCP!"=="1" (
+  echo       Vault MCP server already configured, leaving it as-is.
+) else (
+  echo       Connecting the agent to %USERPROFILE%\Documents\dsh-vault ...
+  (
+    echo(
+    echo - insert:
+    echo     - id: mcp-obsidian-vault
+    echo       name: '@deepseek-ai/dsh-mcp-client'
+    echo       config:
+    echo         serverName: vault
+    echo         transport: stdio
+    echo         command: mcp-server-filesystem
+    echo         args: ['%USERPROFILE:\=/%/Documents/dsh-vault']
+  ) >> "%USERPROFILE%\.dsh\cordis.patch.yml"
+  echo       Done. Open that same folder as a vault in Obsidian to browse it.
+)
+
+echo [7/7] Checking for .NET 8 SDK...
 set "HAVE_SDK8=0"
 for /f "delims=" %%v in ('dotnet --list-sdks 2^>nul') do (
   echo %%v | findstr /b "8." >nul && set "HAVE_SDK8=1"

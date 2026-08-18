@@ -11,6 +11,10 @@
   "license": "ISC",
   "description": "OpenAI-compatible /v1/chat/completions wrapper around a local dsh (DeepSeek Harness) headless agent.",
   "dependencies": {
-    "express": "^5.2.1"
+    "express": "^5.2.1",
+    "mammoth": "^1.12.1",
+    "multer": "^2.2.0",
+    "pdf-parse": "^2.4.5",
+    "turndown": "^7.2.4"
   }
 }

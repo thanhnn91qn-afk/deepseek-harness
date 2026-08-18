@@ -1,6 +1,6 @@
 # DeepSeek Harness — fork cá nhân (tiếng Việt)
 
-Đây là bản fork của [deepseek-ai/deepseek-harness](https://github.com/deepseek-ai/deepseek-harness), với 3 phần bổ sung trên nền dự án gốc `dsh`. Nội dung gốc bằng tiếng Anh của dsh nằm ở phần dưới.
+Đây là bản fork của [deepseek-ai/deepseek-harness](https://github.com/deepseek-ai/deepseek-harness), với 4 phần bổ sung trên nền dự án gốc `dsh`. Nội dung gốc bằng tiếng Anh của dsh nằm ở phần dưới.
 
 ## 1. Giao diện tiếng Việt
 
@@ -13,6 +13,10 @@ Server Express nhỏ, expose endpoint chuẩn OpenAI `POST /v1/chat/completions`
 ## 3. `DshStackLauncher/`
 
 Launcher desktop C#/WinForms rất nhẹ (~170 KB), khởi động và theo dõi cùng lúc Web UI của `dsh` lẫn proxy OpenAI từ một cửa sổ duy nhất — không mở console riêng, log gộp realtime, nút Start/Stop riêng từng service, dùng Windows Job Object để đảm bảo tiến trình con luôn được dọn sạch kể cả khi launcher bị force-kill hoặc crash.
+
+## 4. Vault Obsidian (bộ nhớ kiến thức cho agent)
+
+Trang `http://127.0.0.1:8787/vault` (nút "Nạp kiến thức vào vault" trong `DshStack.exe`) cho phép upload `.docx`/`.pdf`/`.md`/`.txt`, tự convert sang Markdown, lưu vào `~/Documents/dsh-vault`. `setup.bat` tự cấu hình 1 MCP server (`mcp-server-filesystem`) trỏ đúng thư mục đó, nên agent `dsh` đọc/ghi được note trực tiếp. Mở cùng thư mục đó bằng app Obsidian (tự cài, xem [dsh-openai-proxy/README.md](dsh-openai-proxy/README.md#obsidian-vault-knowledge-base-for-the-agent)) để xem đẹp hơn — Obsidian chỉ là trình xem, không bắt buộc để agent hoạt động.
 
 ## Cài đặt nhanh (Windows)
 

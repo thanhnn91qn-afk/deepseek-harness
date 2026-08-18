@@ -66,6 +66,18 @@ curl -N http://127.0.0.1:8787/v1/chat/completions \
   }'
 ```
 
+## Obsidian vault (knowledge base for the agent)
+
+`GET /vault` serves a small upload page: pick a `.docx`, `.pdf`, `.md`, or `.txt` file and it's converted to Markdown (`.docx` via `mammoth`+`turndown`, `.pdf` via `pdf-parse`, `.md`/`.txt` saved as-is) and written into the vault folder (`VAULT_DIR`, default `~/Documents/dsh-vault`).
+
+That same folder is what the `vault` MCP server (`mcp-server-filesystem`, wired into `$DSH_HOME/cordis.patch.yml` by `setup.bat`) gives the `dsh` agent read/write access to, and what you open as an Obsidian vault (Obsidian itself is not required — it's just a nice viewer for the same `.md` files) to browse the same notes with graph view, backlinks, etc.
+
+| Variable | Default | Purpose |
+|---|---|---|
+| `VAULT_DIR` | `~/Documents/dsh-vault` | Folder the upload page writes converted notes into. Must match the `vault` MCP server's path for the agent to see them. |
+
+**No file-type/content validation beyond extension** — a `.docx`/`.pdf` upload is parsed by `mammoth`/`pdf-parse`, both of which handle untrusted input defensively, but treat this the same as any other upload endpoint: don't expose it to the LAN unless you also accept [the LAN risk below](#lan-access-and-its-risk) for the vault's contents.
+
 ## Point your app at it
 
 Configure your app the same way you would for OpenAI, but with:

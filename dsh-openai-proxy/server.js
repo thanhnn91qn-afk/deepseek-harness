@@ -4,6 +4,8 @@ import { spawn } from 'node:child_process'
 import { mkdirSync, existsSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
+import os from 'node:os'
+import { createVaultRouter } from './vault.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -25,6 +27,7 @@ const DSH_CWD = process.env.DSH_CWD ?? path.resolve(__dirname, 'workspace')
 const DSH_TIMEOUT_MS = Number(process.env.DSH_TIMEOUT_MS ?? 120_000)
 const MODEL_NAME = process.env.MODEL_NAME ?? 'dsh-agent'
 const LMSTUDIO_API_KEY = process.env.LMSTUDIO_API_KEY ?? 'lm-studio'
+const VAULT_DIR = process.env.VAULT_DIR ?? path.join(os.homedir(), 'Documents', 'dsh-vault')
 
 mkdirSync(DSH_CWD, { recursive: true })
 
@@ -75,6 +78,7 @@ function runHeadless(task) {
 
 const app = express()
 app.use(express.json({ limit: '10mb' }))
+app.use('/vault', createVaultRouter(VAULT_DIR))
 
 app.post('/v1/chat/completions', async (req, res) => {
   const { messages, stream } = req.body ?? {}

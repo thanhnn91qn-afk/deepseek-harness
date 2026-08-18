@@ -99,6 +99,40 @@ This fork removes that refusal (see [`packages/bundle/web-app/src/startup.ts`](.
 
 To go back to `127.0.0.1`-only, remove `--host 0.0.0.0` from the `dsh web` launch args and `BIND_HOST=0.0.0.0` from the proxy's env in [`DshStackLauncher/Form1.cs`](../DshStackLauncher/Form1.cs), then rebuild.
 
+## Trí nhớ có chọn lọc (`/memory`)
+
+Mỗi lần gọi `/v1`, kết luận của agent được **khử định danh** rồi ghi vào
+`$DSH_HOME/memory/verdicts.jsonl`. Định kỳ (mặc định 3 giờ) chúng được gộp
+thành một tập **luật có trần** trong `<vault>/memory/*.md`, và chỉ mục của
+những luật đã chốt được ghi vào `$DSH_HOME/AGENTS.md` — file mà dsh nạp vào mọi
+phiên, nên phiên sau tự biết đã học được gì.
+
+Rà soát 500 hồ sơ **không** sinh 500 ghi chú: luật trùng thì gộp và tăng bộ
+đếm, gặp <3 lần thì ở dạng nháp và không vào chỉ mục, nháp quá 30 ngày thì tự
+rụng, và tổng số luật bị chặn ở 80.
+
+| Endpoint | Việc |
+|---|---|
+| `GET /memory/rules` | Xem luật đã tích luỹ và số verdict đang chờ |
+| `POST /memory/consolidate` | Gộp ngay, không đợi hẹn giờ |
+| `POST /memory/tidy` | Dọn nháp hết hạn + sinh lại chỉ mục (không gọi LLM) |
+
+| Biến môi trường | Mặc định | Ý nghĩa |
+|---|---|---|
+| `MEMORY_ENABLED` | `1` | `0` để tắt hẳn đường ống |
+| `MEMORY_INTERVAL_MS` | `10800000` (3h) | `0` để chỉ chạy khi gọi tay |
+| `MEMORY_LLM_BASE_URL` | `http://192.168.1.71:1234/v1` | Endpoint dùng để chưng cất |
+| `MEMORY_LLM_MODEL` | `google/gemma-4-12b` | Model chưng cất |
+
+**Dữ liệu bệnh nhân:** chỉ *kết luận* của agent được ghi, không bao giờ ghi
+prompt chứa hồ sơ. Tên, ngày sinh, CCCD, thẻ BHYT, mã hồ sơ, số điện thoại và
+địa chỉ bị loại trước khi chạm đĩa ([`memory/scrub.js`](memory/scrub.js)), và
+`upsertRule` từ chối ghi nếu vẫn còn dấu hiệu định danh. Log verdict nằm **ngoài
+vault** và không phục vụ qua HTTP. Xem
+[spec thiết kế](../docs/superpowers/specs/2026-08-18-selective-memory-design.md).
+
+Chạy test: `node --test memory/*.test.js`
+
 ## Known limitations
 
 - Only the last `user` message is sent to `dsh`; prior conversation turns, `system` messages, and multi-turn history are not forwarded (each request is a fresh `dsh` headless session).

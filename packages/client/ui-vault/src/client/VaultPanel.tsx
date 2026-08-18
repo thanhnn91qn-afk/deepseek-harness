@@ -1,7 +1,9 @@
-/** Sidebar-footer Vault panel: upload .docx/.pdf/.md/.txt, browse notes, view the wikilink graph. */
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+/** Sidebar-footer Vault trigger and the full-viewport upload/notes/graph
+ * page it opens, modeled on the Settings modal (mask + centered panel,
+ * Escape/mask-click to close). */
+import { useEffect, useId, useRef, useState } from 'react'
 import {
-  IconFolderOpen16, useDismissOnOutsidePointer,
+  IconCloseOutline16, IconFolderOpen16,
 } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { InjectFace, PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
 import type {} from '@deepseek-ai/dsh-client-ui-sidebar/client'
@@ -12,29 +14,31 @@ import css from './VaultPanel.module.css'
 export type VaultPanelProps =
   PropsRuntime<'sidebar.footer.action'> & InjectFace<VaultPanelFace> & PropsLocale<'vault'>
 
-/** Render the Vault trigger and the upload/notes/graph panel it opens above the sidebar footer. */
-export function VaultPanel({ wide, baseUrl, t }: VaultPanelProps) {
-  const [open, setOpen] = useState(false)
+type PageProps = {
+  baseUrl: string
+  t: VaultPanelProps['t']
+  onClose: () => void
+}
+
+/** The modal layer: full-viewport mask + centered panel, two columns (notes/upload, graph). */
+function VaultPage({ baseUrl, t, onClose }: PageProps) {
   const [data, setData] = useState<VaultGraphData>()
   const [loadError, setLoadError] = useState<string>()
   const [uploadStatus, setUploadStatus] = useState<{ kind: 'idle' | 'busy' | 'ok' | 'error'; message?: string }>({ kind: 'idle' })
-  const rootRef = useRef<HTMLDivElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const [anchor, setAnchor] = useState<{ left: number; bottom: number }>()
+  const titleId = useId()
+  const closeButton = useRef<HTMLButtonElement | null>(null)
 
-  useLayoutEffect(() => {
-    if (!open) return
-    const place = (): void => {
-      const rect = rootRef.current?.getBoundingClientRect()
-      if (rect !== undefined) setAnchor({ left: rect.left, bottom: window.innerHeight - rect.top + 8 })
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent): void => {
+      if (event.key === 'Escape') onClose()
     }
-    place()
-    window.addEventListener('resize', place)
-    return () => { window.removeEventListener('resize', place) }
-  }, [open])
+    document.addEventListener('keydown', onKeyDown)
+    return () => { document.removeEventListener('keydown', onKeyDown) }
+  }, [onClose])
 
-  useDismissOnOutsidePointer(rootRef, open, setOpen)
+  useEffect(() => { closeButton.current?.focus() }, [])
 
   const load = (): void => {
     setLoadError(undefined)
@@ -46,12 +50,12 @@ export function VaultPanel({ wide, baseUrl, t }: VaultPanelProps) {
       })
   }
 
-  useEffect(() => { if (open) load() }, [open])
+  useEffect(load, [baseUrl])
 
   useEffect(() => {
-    if (!open || data === undefined || canvasRef.current === null) return
+    if (data === undefined || canvasRef.current === null) return
     return runVaultGraph(canvasRef.current, data.graph)
-  }, [open, data])
+  }, [data])
 
   const upload = (file: File): void => {
     setUploadStatus({ kind: 'busy' })
@@ -79,13 +83,18 @@ export function VaultPanel({ wide, baseUrl, t }: VaultPanelProps) {
   )
 
   return (
-    <div ref={rootRef} className={wide ? css.layer : `${css.layer} ${css.rail}`}>
-      {open && anchor !== undefined && (
-        <section className={css.panel} style={anchor} data-vault-panel aria-label={t('panel.title')}>
-          <header className={css.header}>
-            <span className={css.title}>{t('panel.title')}</span>
-          </header>
-          <div className={css.body}>
+    <div className={css.overlay} role="presentation">
+      <div className={css.mask} aria-hidden="true" onClick={onClose} />
+      <div className={css.panel} role="dialog" aria-modal="true" aria-labelledby={titleId}>
+        <header className={css.header}>
+          <span className={css.title} id={titleId}>{t('panel.title')}</span>
+          <button ref={closeButton} type="button" className={css.close} onClick={onClose}>
+            <IconCloseOutline16 size={14} />
+            <span className={css.hiddenLabel}>{t('panel.close')}</span>
+          </button>
+        </header>
+        <div className={css.body}>
+          <div className={css.column}>
             <div className={css.uploadRow}>
               <input
                 ref={fileInputRef}
@@ -116,36 +125,43 @@ export function VaultPanel({ wide, baseUrl, t }: VaultPanelProps) {
                 {t('panel.upload.failed', { message: uploadStatus.message ?? '' })}
               </p>
             )}
-
             {loadError !== undefined && (
               <p className={css.readError} role="alert">{t('panel.loadFailed', { message: loadError })}</p>
-            )}
-
-            {data !== undefined && data.graph.nodes.length > 0 && (
-              <>
-                <h3 className={css.group}>{t('panel.graph.title')}</h3>
-                <canvas ref={canvasRef} className={css.graph} />
-              </>
             )}
 
             <h3 className={css.group}>{t('panel.notes.count', { count: data?.notes.length ?? 0 })}</h3>
             {data !== undefined && data.notes.length === 0 && <p className={css.note}>{t('panel.notes.empty')}</p>}
             <ul className={css.rows}>{data?.notes.map(renderNote)}</ul>
           </div>
-        </section>
-      )}
+          <div className={css.column}>
+            <h3 className={css.group}>{t('panel.graph.title')}</h3>
+            <canvas ref={canvasRef} className={css.graph} />
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/** Render the Vault sidebar trigger and, when open, the full-page overlay. */
+export function VaultPanel({ wide, baseUrl, t }: VaultPanelProps) {
+  const [open, setOpen] = useState(false)
+
+  return (
+    <div className={wide ? css.layer : `${css.layer} ${css.rail}`}>
       <div className={css.footerButtons}>
         <button
           type="button"
           className={css.badge}
-          aria-label={t('panel.trigger')}
+          aria-haspopup="dialog"
           aria-expanded={open}
-          onClick={() => { setOpen(value => !value) }}
+          onClick={() => { setOpen(true) }}
         >
           <IconFolderOpen16 size={wide ? 16 : 18} />
           {wide && <span className={css.badgeLabel}>{t('panel.trigger')}</span>}
         </button>
       </div>
+      {open && <VaultPage baseUrl={baseUrl} t={t} onClose={() => { setOpen(false) }} />}
     </div>
   )
 }

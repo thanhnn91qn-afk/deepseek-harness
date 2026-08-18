@@ -6,6 +6,7 @@ export const NS = 'vault'
 export const zh = {
   'panel.trigger': 'Vault',
   'panel.title': '知识库 Vault',
+  'panel.close': '关闭',
   'panel.upload.label': '上传 .docx / .pdf / .md / .txt',
   'panel.upload.button': '上传并转换',
   'panel.upload.uploading': '正在上传…',
@@ -30,6 +31,7 @@ declare module '@deepseek-ai/dsh-client-ui-slots' {
 export const en = {
   'panel.trigger': 'Vault',
   'panel.title': 'Knowledge vault',
+  'panel.close': 'Close',
   'panel.upload.label': 'Upload .docx / .pdf / .md / .txt',
   'panel.upload.button': 'Upload & convert',
   'panel.upload.uploading': 'Uploading…',
@@ -46,6 +48,7 @@ export const en = {
 export const vi = {
   'panel.trigger': 'Vault',
   'panel.title': 'Vault kiến thức',
+  'panel.close': 'Đóng',
   'panel.upload.label': 'Tải lên .docx / .pdf / .md / .txt',
   'panel.upload.button': 'Tải lên & convert',
   'panel.upload.uploading': 'Đang tải lên…',

@@ -205,6 +205,12 @@
     - id: ui-cordis
       name: '@deepseek-ai/dsh-client-ui-cordis'
 
+    # Sidebar-footer Vault panel: upload/browse the Obsidian-compatible
+    # knowledge-base vault (fork addition, talks to dsh-openai-proxy's
+    # /vault HTTP API rather than a new Host RPC surface).
+    - id: ui-vault
+      name: '@deepseek-ai/dsh-client-ui-vault'
+
     # Durable workflow lifecycle as an independent Chat node after the
     # existing generic workflow tool row.
     - id: ui-workflow-run

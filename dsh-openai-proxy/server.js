@@ -79,6 +79,14 @@ function runHeadless(task) {
 
 const app = express()
 app.use(express.json({ limit: '10mb' }))
+// The dsh Web UI (a different origin/port) fetches /vault/* directly from its
+// own sidebar panel; this stack already has no authentication anywhere, so a
+// permissive CORS policy here adds no new exposure.
+app.use('/vault', (_req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*')
+  res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+  next()
+})
 app.use('/vault', createVaultRouter(VAULT_DIR))
 app.use('/vault', createVaultGraphRouter(VAULT_DIR))
 

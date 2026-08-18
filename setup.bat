@@ -57,12 +57,36 @@ if errorlevel 1 (
   exit /b 1
 )
 
-echo [4/5] Installing proxy dependencies...
+echo [4/6] Installing proxy dependencies...
 pushd dsh-openai-proxy
 call npm install
 popd
 
-echo [5/5] Checking for .NET 8 SDK...
+echo [5/6] Checking model provider config...
+if not exist "%USERPROFILE%\.dsh" mkdir "%USERPROFILE%\.dsh"
+if exist "%USERPROFILE%\.dsh\settings.yaml" (
+  echo       %USERPROFILE%\.dsh\settings.yaml already exists, leaving it as-is.
+) else (
+  echo       Creating %USERPROFILE%\.dsh\settings.yaml with the LM Studio provider...
+  (
+    echo llm-pi-ai:
+    echo   providers:
+    echo     lmstudio:
+    echo       displayName: LM Studio Local
+    echo       apiKeyEnv: LMSTUDIO_API_KEY
+    echo       api: openai-completions
+    echo       baseURL: http://192.168.1.71:1234/v1
+    echo       models:
+    echo         - id: google/gemma-4-12b
+    echo(
+    echo agent-default-model:
+    echo   provider: lmstudio
+    echo   model: google/gemma-4-12b
+  ) > "%USERPROFILE%\.dsh\settings.yaml"
+  echo       Done. Edit that file if LM Studio runs at a different address.
+)
+
+echo [6/6] Checking for .NET 8 SDK...
 set "HAVE_SDK8=0"
 for /f "delims=" %%v in ('dotnet --list-sdks 2^>nul') do (
   echo %%v | findstr /b "8." >nul && set "HAVE_SDK8=1"

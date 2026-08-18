@@ -1,0 +1,16 @@
+{
+  "name": "dsh-openai-proxy",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "OpenAI-compatible /v1/chat/completions wrapper around a local dsh (DeepSeek Harness) headless agent.",
+  "dependencies": {
+    "express": "^5.2.1"
+  }
+}

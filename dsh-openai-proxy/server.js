@@ -142,13 +142,42 @@ app.post('/v1/chat/completions', async (req, res) => {
   const id = `chatcmpl-${randomUUID()}`
   const created = Math.floor(Date.now() / 1000)
 
+  // dsh headless has no token-level output to relay, so a `stream: true`
+  // request still waits for the whole answer — but the connection must not
+  // stay silent while it does. A 12B model on a busy local box routinely
+  // takes 60-120+ seconds, and many HTTP clients (and some proxies/gateways
+  // in front of this one) treat that much silence on an SSE connection as a
+  // dead peer and abort, which looks exactly like "runs for a while then
+  // stops" even though the proxy itself would have finished successfully.
+  // A comment line every few seconds is invisible to any SSE parser (lines
+  // starting with `:` are defined as ignorable) but keeps bytes flowing.
+  let heartbeat
+  if (stream) {
+    res.writeHead(200, {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      Connection: 'keep-alive',
+    })
+    res.write(': keep-alive\n\n')
+    heartbeat = setInterval(() => { res.write(': keep-alive\n\n') }, 15_000)
+  }
+
   let text
   try {
     text = await runHeadless(task)
   } catch (err) {
-    res.status(502).json({ error: { message: err instanceof Error ? err.message : String(err), type: 'upstream_error' } })
+    clearInterval(heartbeat)
+    if (stream) {
+      // Headers are already sent for a stream request, so the failure must
+      // travel as an SSE error event rather than a fresh status code.
+      res.write(`data: ${JSON.stringify({ error: { message: err instanceof Error ? err.message : String(err), type: 'upstream_error' } })}\n\n`)
+      res.end()
+    } else {
+      res.status(502).json({ error: { message: err instanceof Error ? err.message : String(err), type: 'upstream_error' } })
+    }
     return
   }
+  clearInterval(heartbeat)
 
   // Record what the agent concluded, never what arrived in the prompt. This is
   // fire-and-forget on purpose: the caller already has a good answer, and a
@@ -158,12 +187,6 @@ app.post('/v1/chat/completions', async (req, res) => {
   }
 
   if (stream) {
-    res.writeHead(200, {
-      'Content-Type': 'text/event-stream',
-      'Cache-Control': 'no-cache',
-      Connection: 'keep-alive',
-    })
-
     const send = (payload) => res.write(`data: ${JSON.stringify(payload)}\n\n`)
 
     send({

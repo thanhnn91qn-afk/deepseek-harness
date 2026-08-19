@@ -165,7 +165,7 @@ Chạy test: `node --test memory/*.test.js`
 ## Known limitations
 
 - Only the last `user` message is sent to `dsh`; prior conversation turns, `system` messages, and multi-turn history are not forwarded (each request is a fresh `dsh` headless session).
-- No real token streaming — `stream: true` returns the complete answer as one SSE chunk.
+- No real token streaming — `stream: true` returns the complete answer as one SSE chunk, but the connection sends a `: keep-alive` comment line every 15s while it waits, so an SSE client's idle/read timeout doesn't kill the request during a long `dsh` run. A long analysis prompt commonly takes 60-120s on a local 12B model, and a client that expects periodic bytes on the wire (most SSE-aware HTTP clients) would otherwise abort with no clear error partway through — that looked identical to a timeout but wasn't one.
 - `usage` token counts are always `0` (`dsh` headless mode doesn't report them).
 - The request's `model` field does not select the `dsh` provider/model; that's controlled by `$DSH_HOME/settings.yaml`'s `agent-default-model` section on the harness side.
 - No auth, ever — see [LAN access and its risk](#lan-access-and-its-risk).

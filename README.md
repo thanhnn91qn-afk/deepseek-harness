@@ -14,6 +14,12 @@ Server Express nhỏ, expose endpoint chuẩn OpenAI `POST /v1/chat/completions`
 
 Launcher desktop C#/WinForms rất nhẹ (~170 KB), khởi động và theo dõi cùng lúc Web UI của `dsh` lẫn proxy OpenAI từ một cửa sổ duy nhất — không mở console riêng, log gộp realtime, nút Start/Stop riêng từng service, dùng Windows Job Object để đảm bảo tiến trình con luôn được dọn sạch kể cả khi launcher bị force-kill hoặc crash.
 
+**Tham số chỉnh được:** sửa `dsh-stack-settings.json` (cạnh `DshStack.exe`, tự sinh lần chạy đầu, có ghi chú tiếng Việt) rồi khởi động lại — không cần build lại exe.
+
+| Tham số | Mặc định | Ý nghĩa |
+|---|---|---|
+| `ProxyTimeoutMs` | `600000` (10 phút) | Proxy chờ `dsh` trả lời bao lâu trước khi huỷ yêu cầu qua `/v1`. Prompt phân tích dài trên model 12B local dễ vượt mốc mặc định gốc (2 phút) của proxy. |
+
 ## 4. Vault Obsidian (bộ nhớ kiến thức cho agent)
 
 Trang `http://127.0.0.1:8787/vault` (nút "Nạp kiến thức vào vault" trong `DshStack.exe`) cho phép upload `.docx`/`.pdf`/`.md`/`.txt`, tự convert sang Markdown, lưu vào `~/Documents/dsh-vault`. `setup.bat` tự cấu hình 1 MCP server (`mcp-server-filesystem`) trỏ đúng thư mục đó, nên agent `dsh` đọc/ghi được note trực tiếp. Mở cùng thư mục đó bằng app Obsidian (tự cài, xem [dsh-openai-proxy/README.md](dsh-openai-proxy/README.md#obsidian-vault-knowledge-base-for-the-agent)) để xem đẹp hơn — Obsidian chỉ là trình xem, không bắt buộc để agent hoạt động.

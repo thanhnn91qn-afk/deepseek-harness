@@ -39,6 +39,10 @@ public partial class Form1 : Form
         string dshBin = Path.Combine(harnessDir, "apps", "cli", "lib", "bin.js");
         string proxyEntry = Path.Combine(proxyDir, "server.js");
 
+        // Editable next to the exe so a rebuild never resets it back to a
+        // hardcoded value — see LauncherSettings.cs.
+        var settings = LauncherSettings.Load(Path.Combine(root, "dsh-stack-settings.json"));
+
         // Fork change: dsh web binds all interfaces here instead of upstream's
         // 127.0.0.1-only default, so it (and the proxy) are LAN-reachable with
         // no extra setup. dsh still checks the request's Host header against
@@ -56,7 +60,11 @@ public partial class Form1 : Form
         _proxy = new ManagedService(
             "proxy", "http://127.0.0.1:8787/v1",
             "node", $"\"{proxyEntry}\"", proxyDir,
-            new Dictionary<string, string> { ["LMSTUDIO_API_KEY"] = "lm-studio", ["BIND_HOST"] = "0.0.0.0" },
+            new Dictionary<string, string> {
+                ["LMSTUDIO_API_KEY"] = "lm-studio",
+                ["BIND_HOST"] = "0.0.0.0",
+                ["DSH_TIMEOUT_MS"] = settings.ProxyTimeoutMs.ToString(),
+            },
             _job, AppendLog);
 
         BuildUi();

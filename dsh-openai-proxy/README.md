@@ -37,7 +37,7 @@ npm start
 | `BIND_HOST` | `127.0.0.1` | Interface to listen on. Set to `0.0.0.0` to accept LAN connections — see the security warning below first. |
 | `DSH_BIN_PATH` | `../apps/cli/lib/bin.js` | Path to the built `dsh` CLI entry point. |
 | `DSH_CWD` | `./workspace` | Working directory `dsh` runs in (its default filesystem workspace). |
-| `DSH_TIMEOUT_MS` | `120000` | Kill the `dsh` subprocess if it doesn't finish in time. |
+| `DSH_TIMEOUT_MS` | `120000` | Kill the `dsh` subprocess if it doesn't finish in time. A long analysis prompt on a local 12B model can easily run past the default 2 minutes — `DshStack.exe` raises this to 10 minutes via `dsh-stack-settings.json` (see below); running `server.js` directly still uses the 120s default unless you set this yourself. |
 | `MODEL_NAME` | `dsh-agent` | Cosmetic value returned in the response's `model` field. |
 | `LMSTUDIO_API_KEY` | `lm-studio` | Placeholder credential passed to the `dsh` subprocess for the `lmstudio` provider route. |
 
